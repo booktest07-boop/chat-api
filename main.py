@@ -4,7 +4,20 @@
 
 import sys
 import time
+from flask import Flask, jsonify, request
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
+
+# Flask Web Server Setup
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return jsonify({
+        "status": "running",
+        "platform": INSTITUTE_NAME,
+        "founder": FOUNDER_NAME,
+        "message": "LPAI Platform API is Live!"
+    })
 
 def run_chat_simulation(controller):
     """
@@ -12,7 +25,7 @@ def run_chat_simulation(controller):
     """
     print("=" * 60)
     print(f"🤖 Welcome to {INSTITUTE_NAME} AI Career Guide!")
-    print(f"   Platform: LPAI | Founder: {FOUNDER_NAME}")
+    print(f"    Platform: LPAI | Founder: {FOUNDER_NAME}")
     print("=" * 60)
     print("Commands:")
     print("  • Type '/summary' to view current student profile summary.")
@@ -62,7 +75,6 @@ def run_full_automated_test(controller):
     print("🧪 FULL AUTOMATED CONVERSATION TEST MODE")
     print("=" * 60 + "\n")
 
-    # 🟢 टेस्ट मैसेजेस की सही सीक्वेंस (जिसमें फोन नंबर भी शामिल है)
     test_sequence = [
         "",                     # Welcome Message Trigger
         "Mohan Lal",            # Name
@@ -78,12 +90,11 @@ def run_full_automated_test(controller):
         "Haan demo book kar do",# Demo Decision
         "Morning Batch",        # Batch Slot
         "Kal aaunga",           # Demo Date
-        "9876543210",          # 📱 Mobile Number
+        "9876543210",           # 📱 Mobile Number
         "Center address kahan hai?", # Address Query
         "Haan admission confirm kar do" # Admission Confirmation
     ]
 
-    # लूप चलाकर एक-एक मैसेज भेजें
     for step, student_msg in enumerate(test_sequence):
         if student_msg:
             print(f"👤 Student: {student_msg}")
@@ -146,4 +157,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0", port=5000)
