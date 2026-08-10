@@ -7,19 +7,23 @@ import sys
 import time
 import json
 
-# 1. सबसे पहले Credentials फाइल बनाएं (किसी भी अन्य इंपोर्ट से पहले)
+# 1. Environment Variable से Credentials फाइल बनाना (Private Key Fix के साथ)
 creds_data = os.getenv('GOOGLE_JSON')
 if creds_data and not os.path.exists('credentials.json'):
     try:
-        # JSON स्ट्रिंग को सही फॉर्मेट में लोड और सेव करें
         parsed_json = json.loads(creds_data)
+        
+        # 🔧 Private Key के \n फॉर्मैट को सही करना
+        if "private_key" in parsed_json:
+            parsed_json["private_key"] = parsed_json["private_key"].replace("\\n", "\n")
+            
         with open('credentials.json', 'w') as f:
             json.dump(parsed_json, f, indent=2)
-        print("✅ Successfully generated credentials.json from Environment Variable!")
+        print("✅ Successfully generated and formatted credentials.json!")
     except Exception as e:
         print(f"⚠️ Error creating credentials.json: {e}")
 
-# 2. अब बाकी Modules और Controller इंपोर्ट करें
+# 2. अब बाकी Modules इंपोर्ट करें
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
