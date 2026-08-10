@@ -1,16 +1,26 @@
 # ========================================================
-# MAIN APPLICATION ENGINE - LPAI PLATFORM (WEB API MODE)
+# MAIN APPLICATION ENGINE - LPAI PLATFORM
 # ========================================================
 
 import sys
 import time
+import os
+import json
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
 
+# 🟢 Render के Environment Variable से credentials.json बनाना
+if not os.path.exists('credentials.json'):
+    creds_data = os.getenv('GOOGLE_JSON')
+    if creds_data:
+        with open('credentials.json', 'w') as f:
+            f.write(creds_data)
+        print("Successfully created credentials.json from Environment Variable")
+
 # Flask Web Server Setup
 app = Flask(__name__)
-CORS(app)  # वेबसाइट से कनेक्शन (CORS) allow करने के लिए
+CORS(app)
 
 # Single Global Controller Instance
 controller = ConversationController()
@@ -24,7 +34,6 @@ def home():
         "message": "LPAI Platform API is Live!"
     })
 
-# 🟢 यह API आपकी वेबसाइट के चैट विजेट के साथ बात करेगी
 @app.route('/chat', methods=['POST'])
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
@@ -32,7 +41,6 @@ def chat_api():
         data = request.get_json() or {}
         user_message = data.get('message', '').strip()
 
-        # Conversation Controller से AI रिस्पॉन्स प्राप्त करें
         bot_response = controller.process_message(user_message)
 
         return jsonify({
