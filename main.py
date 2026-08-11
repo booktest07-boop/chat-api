@@ -8,48 +8,42 @@ import json
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-# Google Authentication In-Memory
+# 1. Google Credentials in-memory setup
 import gspread
 from google.oauth2.service_account import Credentials
 
 def get_google_sheet_client():
     creds_raw = os.getenv('GOOGLE_JSON')
     if not creds_raw:
-        print("❌ Error: GOOGLE_JSON Environment Variable not found!")
         return None
     try:
-        # JSON लोड करना
         info = json.loads(creds_raw)
-        
-        # Private Key की न्यू-लाइन्स (newlines) की सख्त मरम्मत
         if "private_key" in info:
-            key = info["private_key"]
-            key = key.replace('\\n', '\n').replace('\r', '')
-            info["private_key"] = key
+            info["private_key"] = info["private_key"].replace('\\n', '\n').replace('\r', '')
 
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
         ]
-        
-        # बिना फाइल बनाए सीधे Memory से Credentials लोड करना
         credentials = Credentials.from_service_account_info(info, scopes=scopes)
         client = gspread.authorize(credentials)
         print("✅ Google Sheets Connected Successfully!")
         return client
     except Exception as e:
-        print(f"❌ Google Sheets Connection Error: {e}")
+        print(f"⚠️ Google Sheets Connection Warning: {e}")
         return None
 
-# Google Sheet टेस्ट कनेक्शन
+# Initial Sheet Client Check
 sheet_client = get_google_sheet_client()
 
+# 2. Importing ConversationController (आपकी मुख्य फाइल)
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
 
-# Flask Web Server Setup
+# Flask App Setup
 app = Flask(__name__)
 CORS(app)
 
+# Single Global Controller Instance
 controller = ConversationController()
 
 @app.route('/')
@@ -65,17 +59,22 @@ def home():
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
     try:
-        data = request.get_json() or {}
+        data = request.get_json(force=True, silent=True) or {}
         user_message = data.get('message', '').strip()
 
+        # 🟢 मुख्य कनेक्शन: यहाँ बातचीत ConversationController से ही हैंडल हो रही है
         bot_response = controller.process_message(user_message)
 
         return jsonify({
             "status": "success",
+            "success": True,
             "reply": bot_response,
             "response": bot_response
-        })
+        }), 200
+
     except Exception as e:
+        # अगर controller में कोई भी दिक्कत आती है तो Render के logs में दिखेगा
+        print(f"❌ Error inside ConversationController: {e}")
         return jsonify({
             "status": "error",
             "message": str(e)
