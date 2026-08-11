@@ -7,15 +7,39 @@ from datetime import datetime
 import gspread
 
 # Google Sheet Connection Setup
+
 try:
-    gc = gspread.service_account(filename="credentials.json")
-    spreadsheet = gc.open_by_key("143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY")
+    import os
+    import base64
+    import json
+
+    encoded_credentials = os.environ.get("GOOGLE_JSON_BASE64")
+
+    if not encoded_credentials:
+        raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
+
+    credentials_info = json.loads(
+        base64.b64decode(encoded_credentials).decode("utf-8")
+    )
+
+    if "private_key" in credentials_info:
+        credentials_info["private_key"] = credentials_info["private_key"].replace(
+            "\\n", "\n"
+        )
+
+    gc = gspread.service_account_from_dict(credentials_info)
+
+    spreadsheet = gc.open_by_key(
+        "143BX78uGM-IeHPx-bYQQhkswaiof1Zn-eRLpz5dY5IY"
+    )
+
     sheet = spreadsheet.sheet1
+
     print("✅ Google Sheet Connected Successfully!")
+
 except Exception as e:
     print(f"❌ Google Sheets Connection Error: {e}")
     sheet = None
-
 # ========================================================
 # SECTION 02 : COURSE CONSTANTS (Learning Point Destination)
 # ========================================================
