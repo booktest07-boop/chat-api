@@ -5,33 +5,30 @@
 import os
 import sys
 import json
+import base64
 
-# 🟢 स्टेप 1: GOOGLE_JSON से clean credentials.json बनाना
-creds_raw = os.getenv('GOOGLE_JSON')
-if creds_raw:
+# 🟢 Base64 कोड को डिकोड करके असली credentials.json फाइल बनाना
+b64_creds = os.getenv('GOOGLE_JSON_BASE64')
+if b64_creds:
     try:
-        info = json.loads(creds_raw)
+        # Base64 को वापस ओरिजिनल JSON स्ट्रिंग में बदलें
+        decoded_bytes = base64.b64decode(b64_creds)
         
-        # Private Key की न्यू-लाइन्स और फॉर्मेटिंग को सही करना
-        if "private_key" in info:
-            key = info["private_key"]
-            # अगर key में double escape character (\\n) है तो उसे असली Newline (\n) में बदलें
-            key = key.replace('\\n', '\n').replace('\r', '')
-            info["private_key"] = key
-
-        with open('credentials.json', 'w', encoding='utf-8') as f:
-            json.dump(info, f, indent=2)
+        # credentials.json फाइल बनाएं
+        with open('credentials.json', 'wb') as f:
+            f.write(decoded_bytes)
             
-        print("✅ Successfully created clean credentials.json file!")
+        print("✅ credentials.json successfully generated from Base64!")
     except Exception as e:
-        print(f"❌ Error writing credentials.json: {e}")
+        print(f"❌ Error decoding GOOGLE_JSON_BASE64: {e}")
+else:
+    print("⚠️ GOOGLE_JSON_BASE64 variable not found!")
 
-# 🟢 स्टेप 2: अब Modules इम्पोर्ट करें
+# 🟢 अब आपके सभी Modules और Controllers लोड होंगे
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
 
-# Flask App Setup
 app = Flask(__name__)
 CORS(app)
 
