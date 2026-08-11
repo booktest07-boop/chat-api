@@ -6,31 +6,27 @@ import os
 import sys
 import json
 
-# 🟢 स्टेप 1: किसी भी मॉड्यूल के लोड होने से पहले 'credentials.json' फ़ाइल बनाएं
+# 🟢 स्टेप 1: GOOGLE_JSON से clean credentials.json बनाना
 creds_raw = os.getenv('GOOGLE_JSON')
 if creds_raw:
     try:
-        # JSON लोड करें
         info = json.loads(creds_raw)
         
-        # Private Key की सभी गलत लाइनों और एक्स्ट्रा सिम्बल्स को क्लीन करें
+        # Private Key की न्यू-लाइन्स और फॉर्मेटिंग को सही करना
         if "private_key" in info:
             key = info["private_key"]
-            # अगर \n स्ट्रिंग के रूप में है तो उसे असली Newline से रिप्लेस करें
+            # अगर key में double escape character (\\n) है तो उसे असली Newline (\n) में बदलें
             key = key.replace('\\n', '\n').replace('\r', '')
             info["private_key"] = key
 
-        # अब सही JSON को credentials.json फ़ाइल में लिख दें
         with open('credentials.json', 'w', encoding='utf-8') as f:
             json.dump(info, f, indent=2)
             
         print("✅ Successfully created clean credentials.json file!")
     except Exception as e:
         print(f"❌ Error writing credentials.json: {e}")
-else:
-    print("⚠️ GOOGLE_JSON variable not found in Render Environment!")
 
-# 🟢 स्टेप 2: अब बाकी के मॉड्युल्स इम्पोर्ट करें (अब conversation_controller को फाइल मिल जाएगी)
+# 🟢 स्टेप 2: अब Modules इम्पोर्ट करें
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
@@ -39,7 +35,6 @@ from conversation_controller import ConversationController, INSTITUTE_NAME, FOUN
 app = Flask(__name__)
 CORS(app)
 
-# Controller Instance
 controller = ConversationController()
 
 @app.route('/')
@@ -58,7 +53,6 @@ def chat_api():
         data = request.get_json(force=True, silent=True) or {}
         user_message = data.get('message', '').strip()
 
-        # Conversation Controller से AI रिस्पॉन्स लें
         bot_response = controller.process_message(user_message)
 
         return jsonify({
