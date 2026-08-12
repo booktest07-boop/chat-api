@@ -267,16 +267,14 @@ class ConversationController:
         return self.handle_fallback(cleaned_msg)
 
     def handle_welcome(self):
-        self.current_stage = "name"
-        return (
-            f"नमस्ते! 😊\n\n"
-            f"**{INSTITUTE_NAME}** में आपका स्वागत है। मैं आपका AI Career Guide हूँ।\n\n"
-            f"आज आपकी Studies और Career के लिए सही Course चुनने में आपकी मदद करके मुझे बहुत खुशी होगी।\n\n"
-            f"आगे बढ़ने से पहले,
-            
-            
-            क्या मैं आपका Name जान सकता हूँ?"
-        )
+    self.current_stage = "name"
+    return (
+        f"नमस्ते! 😊\n\n"
+        f"**{INSTITUTE_NAME}** में आपका स्वागत है। मैं आपका AI Career Guide हूँ।\n\n"
+        f"आज आपकी Studies और Career के लिए सही Course चुनने में आपकी मदद करके मुझे बहुत खुशी होगी।\n\n"
+        f"आगे बढ़ने से पहले,\n\n"
+        f"क्या मैं आपका Name जान सकता हूँ?"
+    )
     
 
    # ========================================================
