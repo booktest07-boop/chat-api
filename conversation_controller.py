@@ -266,7 +266,11 @@ class ConversationController:
         # 7. Fallback Handler
         return self.handle_fallback(cleaned_msg)
 
-    def handle_welcome(self):
+   # ✅ सही तरीका (pass जोड़ दिया)
+def some_previous_function(self):
+    pass
+
+def handle_welcome(self):
     self.current_stage = "name"
     return (
         f"नमस्ते! 😊\n\n"
