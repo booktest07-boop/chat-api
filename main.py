@@ -6,50 +6,33 @@ import os
 import sys
 import json
 import base64
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
-# 🟢 Base64 से 'credentials.json' बनाना और Private Key ऑटो-फिक्स करना
-b64_creds = os.getenv('GOOGLE_JSON_BASE64') or os.getenv('GOOGLE_JSON')
+# 🟢 1. GOOGLE_JSON_BASE64 से एकदम साफ़ credentials.json बनाना
+b64_creds = os.getenv('GOOGLE_JSON_BASE64')
 
 if b64_creds:
     try:
-        # Base64 डिकोड का प्रयास करें (अगर Base64 में है)
-        try:
-            decoded_text = base64.b64decode(b64_creds).decode('utf-8')
-            info = json.loads(decoded_text)
-        except Exception:
-            # अगर नॉर्मल JSON स्ट्रिंग है
-            info = json.loads(b64_creds)
-
-        # 🔧 Private Key के PEM फ़ॉर्मैट की गहरी मरम्मत
-        if "private_key" in info:
-            pk = info["private_key"]
-            pk = pk.replace('\\n', '\n').replace('\r', '')
+        # Base64 डिकोड करके सही UTF-8 स्ट्रिंग प्राप्त करें
+        decoded_bytes = base64.b64decode(b64_creds)
+        
+        # फ़ाइल को डिस्क पर लिखें ताकि conversation_controller.py इसे आसानी से पढ़ सके
+        with open('credentials.json', 'wb') as f:
+            f.write(decoded_bytes)
             
-            # यदि Newlines पूरी तरह गायब होकर एक लाइन में आ गई हों
-            if "-----BEGIN PRIVATE KEY-----" in pk:
-                body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").strip()
-                # स्पेस या टूटे कैरेक्टर्स हटाकर क्लीन की बॉडी बनाना
-                body = body.replace(" ", "\n")
-                pk = f"-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n"
-            
-            info["private_key"] = pk
-
-        # फ़ाइल लिखना
-        with open('credentials.json', 'w', encoding='utf-8') as f:
-            json.dump(info, f, indent=2)
-
-        print("✅ credentials.json generated & PEM format repaired!")
-
+        print("✅ Success: credentials.json created properly from Base64!")
     except Exception as e:
-        print(f"❌ Error repairing credentials.json: {e}")
+        print(f"❌ Error generating credentials.json: {e}")
+else:
+    print("⚠️ Warning: GOOGLE_JSON_BASE64 variable not found in Render Environment!")
 
-# 🟢 मॉड्युल्स इम्पोर्ट
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+# 🟢 2. Conversation Controller इम्पोर्ट करें
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
 
+# Flask Server Setup
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # WordPress / Web requests को ब्लॉक होने से रोकने के लिए
 
 controller = ConversationController()
 
@@ -69,6 +52,7 @@ def chat_api():
         data = request.get_json(force=True, silent=True) or {}
         user_message = data.get('message', '').strip()
 
+        # conversation_controller -> Gemini AI & Google Sheets Execution
         bot_response = controller.process_message(user_message)
 
         return jsonify({
@@ -78,11 +62,11 @@ def chat_api():
         }), 200
 
     except Exception as e:
-        print(f"❌ Error in chat handler: {e}")
+        print(f"❌ Error in conversation execution: {e}")
         return jsonify({
             "status": "success",
-            "reply": "नमस्ते! आपका संदेश मिल गया है। कृपया अपना प्रश्न पूछें।",
-            "response": "नमस्ते! आपका संदेश मिल गया है। कृपया अपना प्रश्न पूछें।"
+            "reply": "नमस्ते! आपका संदेश प्राप्त हो गया है। मैं आपकी क्या सहायता कर सकता हूँ?",
+            "response": "नमस्ते! आपका संदेश प्राप्त हो गया है। मैं आपकी क्या सहायता कर सकता हूँ?"
         }), 200
 
 if __name__ == "__main__":
