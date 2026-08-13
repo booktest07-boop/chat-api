@@ -1,34 +1,42 @@
 # ========================================================
-# MAIN APPLICATION ENGINE - LPAI PLATFORM
+# MAIN APPLICATION ENGINE - LPAI PLATFORM (FINAL ENGINE)
 # ========================================================
 
 import os
 import sys
 import json
-import base64
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-# 🟢 Base64 से credentials.json फाइल बनाना
-b64_creds = os.getenv('GOOGLE_JSON_BASE64')
+# 🟢 1. GOOGLE_JSON से credentials.json फाइल बनाना
+creds_raw = os.getenv('GOOGLE_JSON')
 
-if b64_creds:
+if creds_raw:
     try:
-        decoded_bytes = base64.b64decode(b64_creds)
-        with open('credentials.json', 'wb') as f:
-            f.write(decoded_bytes)
-        print("✅ Success: credentials.json created properly from Base64!")
-    except Exception as e:
-        print(f"❌ Error generating credentials.json: {e}")
-else:
-    print("⚠️ GOOGLE_JSON_BASE64 variable not found!")
+        # JSON लोड करें
+        info = json.loads(creds_raw)
+        
+        # अगर \n में दिक्कत हो तो उसे सही करें
+        if "private_key" in info:
+            info["private_key"] = info["private_key"].replace('\\n', '\n').replace('\r', '')
 
-# 🟢 Conversation Controller इंपोर्ट
+        with open('credentials.json', 'w', encoding='utf-8') as f:
+            json.dump(info, f, indent=2)
+            
+        print("✅ Success: credentials.json created successfully!")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not parse GOOGLE_JSON: {e}")
+else:
+    print("⚠️ GOOGLE_JSON variable not set. Running in standard mode.")
+
+# 🟢 2. Conversation Controller इंपोर्ट करें
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
 
+# Flask Server Setup
 app = Flask(__name__)
-CORS(app)  # WordPress से कनेक्ट होने की अनुमति देता है
+CORS(app)  # WordPress से सुरक्षित कनेक्शन के लिए
 
+# Single Controller Instance
 controller = ConversationController()
 
 @app.route('/')
@@ -47,6 +55,7 @@ def chat_api():
         data = request.get_json(force=True, silent=True) or {}
         user_message = data.get('message', '').strip()
 
+        # Conversation Controller -> Gemini AI से जवाब लाना
         bot_response = controller.process_message(user_message)
 
         return jsonify({
@@ -56,11 +65,11 @@ def chat_api():
         }), 200
 
     except Exception as e:
-        print(f"❌ Error in chat handler: {e}")
+        print(f"❌ Error during conversation: {e}")
         return jsonify({
             "status": "success",
-            "reply": "नमस्ते! आपका संदेश मिल गया है। कृपया अपना सवाल पूछें।",
-            "response": "नमस्ते! आपका संदेश मिल गया है। कृपया अपना सवाल पूछें।"
+            "reply": "नमस्ते! आपका संदेश प्राप्त हो गया है। कृपया अपना प्रश्न पूछें।",
+            "response": "नमस्ते! आपका संदेश प्राप्त हो गया है। कृपया अपना प्रश्न पूछें।"
         }), 200
 
 if __name__ == "__main__":
