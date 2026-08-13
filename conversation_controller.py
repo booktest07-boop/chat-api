@@ -197,12 +197,12 @@ class ConversationController:
         # 2. हिस्ट्री में जोड़ना
         self.conversation_history.append({"user": cleaned_msg})
 
-        # 3. Exit Commands Check
+       # 3. Exit Commands Check
         if cleaned_msg.lower() in ["exit", "quit", "bye", "बंद करो", "अलविदा"]:
-        # 2. Empty Input Check
+            return "बातचीत समाप्त करने के लिए धन्यवाद! यदि आपका कोई अन्य प्रश्न हो, तो बेझिझक पूछें।"
+
         if not cleaned_msg and self.current_stage == "welcome":
             return self.handle_welcome()
-
         # 3. Completed Conversation Check
         if self.conversation_completed:
             return self.handle_completed_stage(cleaned_msg)
