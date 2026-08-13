@@ -185,18 +185,20 @@ class ConversationController:
     # SECTION 06 : MAIN PROCESS MESSAGE & WELCOME HANDLERS
     # ========================================================
 
+    def clean_text(self, text):
+        if not text:
+            return ""
+        return str(text).strip()
+
     def process_message(self, user_message):
+        # 1. टेक्स्ट साफ़ करना
         cleaned_msg = self.clean_text(user_message)
+        
+        # 2. हिस्ट्री में जोड़ना
         self.conversation_history.append({"user": cleaned_msg})
 
-        # 1. Exit Commands Check
+        # 3. Exit Commands Check
         if cleaned_msg.lower() in ["exit", "quit", "bye", "बंद करो", "अलविदा"]:
-            self.conversation_completed = True
-            return (
-                f"धन्यवाद **{self.student.name if self.student.name else 'जी'}**! 🙏\n\n"
-                f"**{INSTITUTE_NAME}** से जुड़ने के लिए आपका आभार। आपका दिन शुभ हो!"
-            )
-
         # 2. Empty Input Check
         if not cleaned_msg and self.current_stage == "welcome":
             return self.handle_welcome()
