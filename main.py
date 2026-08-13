@@ -1,5 +1,5 @@
 # ========================================================
-# MAIN APPLICATION ENGINE - LPAI PLATFORM (FINAL ENGINE)
+# MAIN APPLICATION ENGINE - LPAI PLATFORM
 # ========================================================
 
 import os
@@ -8,15 +8,13 @@ import json
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-# 🟢 1. GOOGLE_JSON से credentials.json फाइल बनाना
-creds_raw = os.getenv('GOOGLE_JSON')
+# 🟢 1. GOOGLE_JSON से credentials.json बनाना
+creds_raw = os.getenv('GOOGLE_JSON') or os.getenv('GOOGLE_JSON_BASE64')
 
 if creds_raw:
     try:
-        # JSON लोड करें
+        # अगर JSON स्ट्रिंग है
         info = json.loads(creds_raw)
-        
-        # अगर \n में दिक्कत हो तो उसे सही करें
         if "private_key" in info:
             info["private_key"] = info["private_key"].replace('\\n', '\n').replace('\r', '')
 
@@ -27,16 +25,14 @@ if creds_raw:
     except Exception as e:
         print(f"⚠️ Warning: Could not parse GOOGLE_JSON: {e}")
 else:
-    print("⚠️ GOOGLE_JSON variable not set. Running in standard mode.")
+    print("⚠️ GOOGLE_JSON variable not set.")
 
 # 🟢 2. Conversation Controller इंपोर्ट करें
 from conversation_controller import ConversationController, INSTITUTE_NAME, FOUNDER_NAME
 
-# Flask Server Setup
 app = Flask(__name__)
-CORS(app)  # WordPress से सुरक्षित कनेक्शन के लिए
+CORS(app)  # WordPress कनेक्शन चालू रखने के लिए
 
-# Single Controller Instance
 controller = ConversationController()
 
 @app.route('/')
@@ -55,7 +51,6 @@ def chat_api():
         data = request.get_json(force=True, silent=True) or {}
         user_message = data.get('message', '').strip()
 
-        # Conversation Controller -> Gemini AI से जवाब लाना
         bot_response = controller.process_message(user_message)
 
         return jsonify({
