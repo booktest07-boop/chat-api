@@ -1428,16 +1428,16 @@ class ConversationController:
                 f"सटीक Fees व Discount Offer जानने के लिए आप हमारे Center पर Visit कर सकते हैं या Helpline पर संपर्क कर सकते हैं! 😊"
             )
 
-        # 2️⃣ CENTER ADDRESS & LOCATION
-        elif any(k in norm_text for k in ["address", "location", "kaha hai", "kahan", "center", "centre", "kaha par", "4"]):
+        # 2️⃣ CENTER ADDRESS & LOCATION / GOOGLE MAP
+        elif any(k in norm_text for k in ["address", "location", "kaha hai", "kahan", "center", "centre", "kaha par", "map", "maps", "google map", "4"]):
             return (
-                f"**{self.student.name} जी**, हमारे Institute का Address यह है:\n\n"
+                f"**{self.student.name} जी**, हमारे Institute का Address और Google Map Location यह है:\n\n"
                 f"📍 **Learning Point Destination**\n"
                 f"🏢 Main Campus, Near Central Market / Bus Stand\n"
+                f"🗺️ **Google Maps Link:** https://maps.google.com/?q=Learning+Point+Destination\n"
                 f"📞 **Helpline:** 9588544158\n\n"
-                f"आप Google Maps पर भी 'Learning Point Destination' सर्च करके सीधे सेंटर पहुँच सकते हैं। 🚗"
+                f"आप इस लिंक पर क्लिक करके सीधे सेंटर की लोकेशन देख सकते हैं। 🚗"
             )
-
         # 3️⃣ FREE DEMO CLASS BOOKING
         elif any(k in norm_text for k in ["demo", "free class", "trial", "booking", "3"]):
             return (
