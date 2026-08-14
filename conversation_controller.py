@@ -1407,16 +1407,58 @@ class ConversationController:
         return self.conversation_completed
 
     # ========================================================
-    # SECTION 84 : FALLBACK ENGINE
+    # SECTION 84 : FALLBACK ENGINE & SMART Q&A
     # ========================================================
 
     def handle_fallback(self, text):
         """
-        जब AI को Student का मैसेज समझ न आए, तो बातचीत को दोबारा ट्रैक पर लाना
+        जब AI को Student का मैसेज समझ न आए या वह Fees/Address/Courses/Demo पूछे
         """
         if not self.student.name:
             return "क्षमा करें, मैं आपका Name ठीक से समझ नहीं पाया। कृपया अपना शुभ Name दोबारा बताएं?"
-        
+
+        norm_text = text.lower().strip()
+
+        # 1️⃣ FEES & INSTALLMENTS
+        if any(k in norm_text for k in ["fee", "fees", "kitna lagega", "paisa", "rupee", "installment", "2", "cost"]):
+            return (
+                f"**{self.student.name} जी**, हमारे यहाँ सभी Courses की Fees बहुत ही Affordable और बजट के अनुकूल है। 💳\n\n"
+                f"• **Easy Installments (आसान किश्तों)** की सुविधा उपलब्ध है।\n"
+                f"• Early Admission पर विशेष **Scholarship / Discount** भी दिया जाता है।\n\n"
+                f"सटीक Fees व Discount Offer जानने के लिए आप हमारे Center पर Visit कर सकते हैं या Helpline पर संपर्क कर सकते हैं! 😊"
+            )
+
+        # 2️⃣ CENTER ADDRESS & LOCATION
+        elif any(k in norm_text for k in ["address", "location", "kaha hai", "kahan", "center", "centre", "kaha par", "4"]):
+            return (
+                f"**{self.student.name} जी**, हमारे Institute का Address यह है:\n\n"
+                f"📍 **Learning Point Destination**\n"
+                f"🏢 Main Campus, Near Central Market / Bus Stand\n"
+                f"📞 **Helpline:** 9588544158\n\n"
+                f"आप Google Maps पर भी 'Learning Point Destination' सर्च करके सीधे सेंटर पहुँच सकते हैं। 🚗"
+            )
+
+        # 3️⃣ FREE DEMO CLASS BOOKING
+        elif any(k in norm_text for k in ["demo", "free class", "trial", "booking", "3"]):
+            return (
+                f"बहुत बढ़िया **{self.student.name} जी**! 🎉\n\n"
+                f"आपकी **1-Day Free Practical Demo Class** के लिए रिक्वेस्ट नोट कर ली गई है।\n\n"
+                f"आप कल सुबह 9:00 AM से शाम 6:00 PM के बीच अपनी सुविधानुसार किसी भी समय Center पर आकर Demo ले सकते हैं।"
+            )
+
+        # 4️⃣ COURSE / SYLLABUS / POWER BI / SPECIFIC COURSES
+        elif any(k in norm_text for k in ["course", "syllabus", "power bi", "excel", "python", "digital", "tally", "graphic", "1"]):
+            course_name = "Power BI & Data Analytics" if "power bi" in norm_text else "इस Course"
+            return (
+                f"**{self.student.name} जी**, **{course_name}** में आपको:\n\n"
+                f"✅ 100% Practical Training on Real Projects\n"
+                f"✅ Industry Standard Tools & Live Case Studies\n"
+                f"✅ ISO Certified & Govt. Recognized Certificate 📜\n"
+                f"✅ Job Assistance & Resume Building Support\n\n"
+                f"क्या आप इसके लिए Free Demo Class बुक करना चाहेंगे?"
+            )
+
+        # 5️⃣ DEFAULT FALLBACK (जब बिल्कुल कुछ मैच न हो)
         return (
             f"**{self.student.name} जी**, मैं आपकी बात पूरी तरह समझ नहीं पाया। 😊\n\n"
             f"क्या आप अपना सवाल दोबारा पूछ सकते हैं, या इनमें से किसी Option पर जानकारी चाहते हैं?\n"
