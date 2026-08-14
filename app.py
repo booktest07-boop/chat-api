@@ -37,33 +37,41 @@ def chat():
         user_message = data.get('message', '').strip()
         session_id = data.get('session_id', 'default_user')
 
-        # अगर नया यूजर है या START_CONVERSATION आया है -> नया फ्रेश सेशन बनाएं
-        if user_message == "START_CONVERSATION" or session_id not in user_sessions:
+        # 🟢 1. अगर START_CONVERSATION आया है -> नया सेशन बनाएं और सिर्फ 1 बार वेलकम भेजें
+        if user_message == "START_CONVERSATION":
             if ConversationController:
                 user_sessions[session_id] = ConversationController()
             
-            # फ्रेश वेलकम मैसेज
-            reply = "नमस्ते! 😊\n\n**Learning Point Destination** में आपका स्वागत है। मैं आपका AI Career Guide हूँ।\n\nक्या मैं आपका Name जान सकता हूँ?"
+            reply = (
+                "🙏 **नमस्ते! Learning Point Destination में आपका स्वागत है।**\n\n"
+                "मैं आपका 24x7 **AI Career Counsellor** हूँ। 🎯\n\n"
+                "आपकी **Qualification और Goals** के अनुसार आपके लिए Best Job-Oriented Course चुनने में मैं आपकी पूरी सहायता करूँगा, ताकि आपके लिए Career के बेहतरीन रास्ते खुल सकें।\n\n"
+                "शुरुआत करने के लिए, **क्या मैं आपका शुभ Name जान सकता हूँ?** 😊"
+            )
             return jsonify({
                 "status": "success",
                 "reply": reply,
                 "response": reply
             }), 200
 
-        # मैसेज को संबंधित यूजर के सेशन कंट्रोलर से प्रोसेस करना
+        # 🟢 2. अगर किसी वजह से सेशन मौजूद नहीं है, तो फ्रेश सेशन बनाएं
+        if session_id not in user_sessions:
+            if ConversationController:
+                user_sessions[session_id] = ConversationController()
+
+        # 🟢 3. हर सामान्य मैसेज सीधा कंट्रोलर प्रोसेस करेगा (नो डुप्लीकेट वेलकम)
         controller = user_sessions.get(session_id)
         if controller:
             bot_reply = controller.process_message(user_message)
         else:
-            bot_reply = "नमस्ते! आपका संदेश प्राप्त हो गया है। कृपया अपना प्रश्न पूछें।"
+            bot_reply = "नमस्ते! कृपया अपना प्रश्न या मोबाइल नंबर साझा करें।"
 
         return jsonify({
             "status": "success",
             "reply": bot_reply,
             "response": bot_reply
         }), 200
-
-    except Exception as e:
+        except Exception as e:
         print(f"❌ Chat processing error: {e}")
         fallback_reply = "धन्यवाद! कृपया अपना मोबाइल नंबर या कोर्स से संबंधित प्रश्न साझा करें।"
         return jsonify({
