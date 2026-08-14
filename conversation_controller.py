@@ -1428,22 +1428,25 @@ class ConversationController:
                 f"सटीक Fees व Discount Offer जानने के लिए आप हमारे Center पर Visit कर सकते हैं या Helpline पर संपर्क कर सकते हैं! 😊"
             )
 
-        # 2️⃣ CENTER ADDRESS & LOCATION / GOOGLE MAP
-        elif any(k in norm_text for k in ["address", "location", "kaha hai", "kahan", "center", "centre", "kaha par", "map", "maps", "google map", "4"]):
+        # 2️⃣ CENTER ADDRESS / LOCATION / ROUTE / KAISE AAU
+        elif any(k in norm_text for k in ["address", "location", "kaha hai", "kahan", "center", "centre", "kaha par", "map", "maps", "google map", "kaise aau", "kaise pahuchu", "kaise aana hai", "rasta", "route", "4"]):
             return (
-                f"**{self.student.name} जी**, हमारे Institute का Address और Google Map Location यह है:\n\n"
+                f"**{self.student.name} जी**, Center पहुँचना बहुत ही आसान है:\n\n"
                 f"📍 **Learning Point Destination**\n"
                 f"🏢 Main Campus, Near Central Market / Bus Stand\n"
                 f"🗺️ **Google Maps Link:** https://maps.google.com/?q=Learning+Point+Destination\n"
                 f"📞 **Helpline:** 9588544158\n\n"
-                f"आप इस लिंक पर क्लिक करके सीधे सेंटर की लोकेशन देख सकते हैं। 🚗"
+                f"आप ऊपर दिए गए Google Map लिंक को खोलकर सीधे नेविगेशन ऑन कर सकते हैं। Center पहुँचने पर कॉल कर लीजिएगा!"
             )
-        # 3️⃣ FREE DEMO CLASS BOOKING
-        elif any(k in norm_text for k in ["demo", "free class", "trial", "booking", "3"]):
             return (
                 f"बहुत बढ़िया **{self.student.name} जी**! 🎉\n\n"
                 f"आपकी **1-Day Free Practical Demo Class** के लिए रिक्वेस्ट नोट कर ली गई है।\n\n"
-                f"आप कल सुबह 9:00 AM से शाम 6:00 PM के बीच अपनी सुविधानुसार किसी भी समय Center पर आकर Demo ले सकते हैं।"
+                f"आप कल अपनी सुविधानुसार Center पर आकर Class ले सकते हैं।\n\n"
+                f"🏢 **Center Address:** Learning Point Destination, Main Campus, Near Central Market / Bus Stand\n"
+                f"🗺️ **Google Maps Link:** https://maps.google.com/?q=Learning+Point+Destination\n"
+                f"📞 **Counselor Helpline:** 9588544158\n\n"
+                f"क्या आपको Center पहुँचने का रास्ता (Route) जानने या किसी अन्य चीज़ में कोई सहायता चाहिए? 😊"
+            )
             )
 
         # 4️⃣ COURSE / SYLLABUS / POWER BI / SPECIFIC COURSES
