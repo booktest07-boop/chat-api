@@ -219,7 +219,7 @@ class ConversationController:
         if objection_answer:
             return objection_answer
 
-        universal_answer = self.check_universal_questions(cleaned_msg)
+        universal_answer = None
         if universal_answer:
             if getattr(self.student, 'demo_booked', False):
                 self.current_stage = "admission_decision"
