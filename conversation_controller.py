@@ -215,7 +215,7 @@ class ConversationController:
             return self.handle_admission_decision(cleaned_msg)
 
         # 5. Universal & Objection Checks
-        objection_answer = self.check_objection(cleaned_msg)
+        objection_answer = None
         if objection_answer:
             return objection_answer
 
