@@ -267,17 +267,16 @@ class ConversationController:
 
         # 7. Fallback Handler
         return self.handle_fallback(cleaned_msg)
-
-   # ✅ सही तरीका (pass जोड़ दिया)
-def some_previous_function(self):
-    pass
-
-def handle_welcome(self):
-        self.current_stage = "name"
-        return "नमस्ते! 😊\n\n**Learning Point Destination** में आपका स्वागत है। मैं आपका AI Career Guide हूँ।\n\nक्या मैं आपका Name जान सकता हूँ?"
     
+       # ✅ सही तरीका (pass जोड़ दिया)
+    def some_previous_function(self):
+        pass
+    
+    def handle_welcome(self):
+            self.current_stage = "name"
+            return "नमस्ते! 😊\n\n**Learning Point Destination** में आपका स्वागत है। मैं आपका AI Career Guide हूँ।\n\nक्या मैं आपका Name जान सकता हूँ?"
 
-   # ========================================================
+    # ========================================================
     # SECTION 07 : CERTIFICATE & ISO VALIDITY HANDLER
     # ========================================================
 
@@ -286,6 +285,7 @@ def handle_welcome(self):
             f"**{self.student.name if self.student.name else 'जी'}**, **{INSTITUTE_NAME}** से Course पूरा करने पर आपको **ISO Certified** और **Government Recognized** Certificate प्रदान किया जाता है। 📜\n\n"
             f"यह Certificate सभी Private Jobs, MNCs और Government Job Vacancies/Promotions के लिए **100% Valid** और मान्य है। 😊"
         )
+
     # ========================================================
     # SECTION 08 : NAME HANDLER
     # ========================================================
@@ -294,7 +294,6 @@ def handle_welcome(self):
         extracted_name = self.extract_name(text)
         if not extracted_name:
             return "कृपया अपना सही Name बताइए ताकि हम बात आगे बढ़ा सकें।"
-
         self.student.name = extracted_name
         self.current_stage = "career_goal"
         
