@@ -286,14 +286,26 @@ class ConversationController:
             f"यह Certificate सभी Private Jobs, MNCs और Government Job Vacancies/Promotions के लिए **100% Valid** और मान्य है। 😊"
         )
 
-    # ========================================================
+  # ========================================================
     # SECTION 08 : NAME HANDLER
     # ========================================================
 
+    def extract_name(self, text):
+        import re
+        text = text.strip()
+        cleaned = re.sub(r'^(mera\s+naam|my\s+name\s+is|i\s+am|myself|main|mai|this\s+is|naam\s+hai)\s+', '', text, flags=re.IGNORECASE)
+        cleaned = re.sub(r'\s+(hai|hoon|hu|he)$', '', cleaned, flags=re.IGNORECASE).strip()
+        
+        words = cleaned.split()
+        if words and len(words) <= 4:
+            return " ".join(w.capitalize() for w in words)
+        return cleaned.title() if cleaned else text.title()
+
     def handle_name(self, text):
         extracted_name = self.extract_name(text)
-        if not extracted_name:
+        if not extracted_name or len(extracted_name) < 2:
             return "कृपया अपना सही Name बताइए ताकि हम बात आगे बढ़ा सकें।"
+            
         self.student.name = extracted_name
         self.current_stage = "career_goal"
         
@@ -307,7 +319,7 @@ class ConversationController:
         )
         return response
 
-  # ========================================================
+    # ========================================================
     # SECTION 09 : CAREER GOAL HANDLER (UPDATED JOB TITLES)
     # ========================================================
 
@@ -325,7 +337,6 @@ class ConversationController:
                 f"• Digital Marketer\n"
                 f"• Software / Python Developer"
             )
-        # ... बाकी business/freelancing handlers
         elif "business" in norm_text or "व्यापार" in norm_text or "2" in norm_text:
             self.student.career_goal = "Business"
             self.current_stage = "business_type"
