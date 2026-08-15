@@ -13,26 +13,24 @@ try:
     raw_env_data = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
 
     if raw_env_data:
-        # 1. Raw JSON चेक
+        # 1. JSON या Base64 को पहचानना
         if raw_env_data.startswith("{"):
             credentials_info = json.loads(raw_env_data)
         else:
-            # 2. Base64 डिकोडिंग
             cleaned_b64 = "".join(raw_env_data.split())
             missing_padding = len(cleaned_b64) % 4
             if missing_padding:
                 cleaned_b64 += "=" * (4 - missing_padding)
-
             decoded_bytes = base64.b64decode(cleaned_b64)
             credentials_info = json.loads(decoded_bytes.decode("utf-8"))
 
-        # 3. PEM Private Key लाइन-ब्रेक (\n) फ़िक्स
+        # 2. PEM Private Key लाइन ब्रेक फिक्स
         if "private_key" in credentials_info:
             pk = credentials_info["private_key"]
-            if "\\n" in pk:
-                credentials_info["private_key"] = pk.replace("\\n", "\n")
+            # एस्केप किए गए \n को असली न्यूलाइन में बदलना
+            pk = pk.replace("\\n", "\n").replace("\r", "")
+            credentials_info["private_key"] = pk
 
-        # 4. Google Sheets ऑथराइज़ेशन और कनेक्शन
         gc = gspread.service_account_from_dict(credentials_info)
         sheet_url = "https://docs.google.com/spreadsheets/d/143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY/edit?gid=0#gid=0"
         spreadsheet = gc.open_by_url(sheet_url)
