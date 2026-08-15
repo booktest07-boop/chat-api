@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # WordPress से कनेक्शन ब्लॉक न होने के लिए
 
-# Controller क्लास इम्पोर्ट करना
+# Controller क्लास लोड करना
 try:
     from conversation_controller import ConversationController
     print("✅ ConversationController class loaded successfully!")
@@ -14,7 +14,7 @@ except Exception as e:
     print(f"⚠️ Controller loading error: {e}")
     ConversationController = None
 
-# हर यूजर / सेशन के लिए अलग मेमोरी (Multi-Session Storage)
+# हर यूजर / सेशन के लिए अलग मेमोरी
 user_sessions = {}
 
 @app.route('/', methods=['GET', 'HEAD'])
@@ -28,7 +28,6 @@ def home():
 @app.route('/chat', methods=['POST', 'OPTIONS'])
 @app.route('/api/chat', methods=['POST', 'OPTIONS'])
 def chat():
-    # CORS प्री-फ़्लाइट रिक्वेस्ट हैंडल करना
     if request.method == 'OPTIONS':
         return jsonify({"status": "ok"}), 200
 
@@ -37,7 +36,7 @@ def chat():
         user_message = data.get('message', '').strip()
         session_id = data.get('session_id', 'default_user')
 
-        # 🟢 1. अगर START_CONVERSATION आया है -> नया सेशन बनाएं और सिर्फ 1 बार वेलकम भेजें
+        # 1. अगर START_CONVERSATION आया है -> फ्रेश सेशन बनाएं
         if user_message == "START_CONVERSATION":
             if ConversationController:
                 user_sessions[session_id] = ConversationController()
@@ -54,12 +53,12 @@ def chat():
                 "response": reply
             }), 200
 
-        # 🟢 2. अगर किसी वजह से सेशन मौजूद नहीं है, तो फ्रेश सेशन बनाएं
+        # 2. अगर सेशन मौजूद नहीं है, तो नया सेशन बनाएं
         if session_id not in user_sessions:
             if ConversationController:
                 user_sessions[session_id] = ConversationController()
 
-        # 🟢 3. हर सामान्य मैसेज सीधा कंट्रोलर प्रोसेस करेगा (नो डुप्लीकेट वेलकम)
+        # 3. मैसेज को कंट्रोलर से प्रोसेस करना
         controller = user_sessions.get(session_id)
         if controller:
             bot_reply = controller.process_message(user_message)
@@ -71,7 +70,8 @@ def chat():
             "reply": bot_reply,
             "response": bot_reply
         }), 200
-        except Exception as e:
+
+    except Exception as e:
         print(f"❌ Chat processing error: {e}")
         fallback_reply = "धन्यवाद! कृपया अपना मोबाइल नंबर या कोर्स से संबंधित प्रश्न साझा करें।"
         return jsonify({
