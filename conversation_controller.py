@@ -1,41 +1,34 @@
-# ========================================================
-# SECTION 01 : IMPORTS & GOOGLE SHEETS SETUP
-# ========================================================
 
+# ========================================================
 # Google Sheet Connection Setup
-
+# ========================================================
 try:
     import os
     import base64
     import json
     import gspread
 
-    encoded_credentials = os.environ.get("GOOGLE_JSON_BASE64")
+    encoded_credentials = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
 
     if not encoded_credentials:
         raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
 
-    # 🟢 Auto-Padding Fix (Incorrect padding एरर से बचने के लिए)
-    encoded_credentials = encoded_credentials.strip()
+    # व्हाइटस्पेस और न्यूलाइन्स हटाना
+    encoded_credentials = "".join(encoded_credentials.split())
+
+    # मिसिंग पैडिंग ऑटो-फिक्स
     missing_padding = len(encoded_credentials) % 4
     if missing_padding:
-        encoded_credentials += '=' * (4 - missing_padding)
+        encoded_credentials += "=" * (4 - missing_padding)
 
-    credentials_info = json.loads(
-        base64.b64decode(encoded_credentials).decode("utf-8")
-    )
+    decoded_data = base64.b64decode(encoded_credentials).decode("utf-8")
+    credentials_info = json.loads(decoded_data)
 
     if "private_key" in credentials_info:
-        credentials_info["private_key"] = credentials_info["private_key"].replace(
-            "\\n", "\n"
-        )
+        credentials_info["private_key"] = credentials_info["private_key"].replace("\\n", "\n")
 
     gc = gspread.service_account_from_dict(credentials_info)
-
-    spreadsheet = gc.open_by_key(
-        "143BX78uGM-IeHPx-bYQQhkswaiof1Zn-eRLpz5dY5IY"
-    )
-
+    spreadsheet = gc.open_by_key("143BX78uGM-IeHPx-bYQQhkswaiof1Zn-eRLpz5dY5IY")
     sheet = spreadsheet.sheet1
 
     print("✅ Google Sheet Connected Successfully!")
