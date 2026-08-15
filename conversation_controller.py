@@ -1,6 +1,8 @@
-# ==================================================
-# Google Sheet Connection Setup (Using Direct URL)
 # ========================================================
+# Google Sheet Connection Setup
+# ========================================================
+sheet = None
+
 try:
     import os
     import base64
@@ -9,34 +11,30 @@ try:
 
     raw_env_data = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
 
-    if not raw_env_data:
-        raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
+    if raw_env_data:
+        # अगर डेटा डायरेक्ट JSON फॉर्मेट में है
+        if raw_env_data.startswith("{"):
+            credentials_info = json.loads(raw_env_data)
+        else:
+            # अगर डेटा Base64 फॉर्मेट में है
+            cleaned_b64 = "".join(raw_env_data.split())
+            missing_padding = len(cleaned_b64) % 4
+            if missing_padding:
+                cleaned_b64 += "=" * (4 - missing_padding)
 
-    # 1. अगर वैल्यू सीधे JSON है
-    if raw_env_data.startswith("{"):
-        credentials_info = json.loads(raw_env_data)
+            decoded_bytes = base64.b64decode(cleaned_b64)
+            credentials_info = json.loads(decoded_bytes.decode("utf-8", errors="ignore"))
+
+        if "private_key" in credentials_info:
+            credentials_info["private_key"] = credentials_info["private_key"].replace("\\n", "\n")
+
+        gc = gspread.service_account_from_dict(credentials_info)
+        sheet_url = "https://docs.google.com/spreadsheets/d/143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY/edit?gid=0#gid=0"
+        spreadsheet = gc.open_by_url(sheet_url)
+        sheet = spreadsheet.sheet1
+        print("✅ Google Sheet Connected Successfully via URL!")
     else:
-        # 2. अगर Base64 है
-        cleaned_b64 = "".join(raw_env_data.split())
-        missing_padding = len(cleaned_b64) % 4
-        if missing_padding:
-            cleaned_b64 += "=" * (4 - missing_padding)
-
-        decoded_bytes = base64.b64decode(cleaned_b64)
-        credentials_info = json.loads(decoded_bytes.decode("utf-8", errors="ignore"))
-
-    if "private_key" in credentials_info:
-        credentials_info["private_key"] = credentials_info["private_key"].replace("\\n", "\n")
-
-    # Google Auth
-    gc = gspread.service_account_from_dict(credentials_info)
-
-    # 🟢 यहाँ आपकी पूरी Google Sheet की URL से सीधा कनेक्शन
-    sheet_url = "https://docs.google.com/spreadsheets/d/143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY/edit?gid=0#gid=0"
-    spreadsheet = gc.open_by_url(sheet_url)
-    sheet = spreadsheet.sheet1
-
-    print("✅ Google Sheet Connected Successfully via URL!")
+        print("⚠️ GOOGLE_JSON_BASE64 is empty, skipping sheets...")
 
 except Exception as e:
     print(f"❌ Google Sheets Connection Error: {e}")
