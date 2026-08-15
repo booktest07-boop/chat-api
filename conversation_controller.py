@@ -1,14 +1,13 @@
 # ========================================================
-# Google Sheet Connection Setup
+#  GOOGLE SHEETS WEBHOOK SETUP
 # ========================================================
 import os
 import re
-import base64
+import requests
 import json
-import gspread
+from datetime import datetime
 
-sheet = None
-
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqwfz3UQDvDUxFShoWWbHougyHjr0tFz3E38fX8e0bnTUpya-P0mXW-HXqcFte1TNX/exec"
 try:
     raw_env_data = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
 
@@ -157,32 +156,30 @@ class ConversationController:
     # 🟢 ----------------------------------------------------
     # यहाँ पेस्ट करें: GOOGLE SHEET SAVE FUNCTION
     # ----------------------------------------------------
-    def save_student_to_sheet(self):
-        """Student का डेटा Google Sheet में भेजने के लिए फ़ंक्शन"""
-        if sheet:
-            try:
-                course_key = getattr(self.student, 'recommended_course', '')
-                course_obj = COURSES_DATA.get(course_key, {}) if 'COURSES_DATA' in globals() else {}
-                course_name = course_obj.get('name', course_key)
+   def save_student_to_sheet(self):
+        """Student का डेटा सीधे Webhook के ज़रिए Google Sheet में भेजने के लिए फ़ंक्शन"""
+        try:
+            course_key = getattr(self.student, 'recommended_course', '')
+            course_obj = COURSES_DATA.get(course_key, {}) if 'COURSES_DATA' in globals() else {}
+            course_name = course_obj.get('name', course_key)
 
-                sheet.append_row([
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),      # Date & Time
-                    self.student.name if self.student.name else "N/A",  # Name
-                    self.student.phone if self.student.phone else "N/A",# 📱 Phone Number
-                    self.student.career_goal,                          # Goal
-                    self.student.job_type,                            # Profile
-                    self.student.qualification,                       # Qualification
-                    self.student.computer_knowledge,                  # Knowledge
-                    self.student.learning_mode,                      # Mode (Offline/Online)
-                    course_name,                                      # Course
-                    self.student.selected_time_slot,                  # Time Slot
-                    self.student.selected_date_time,                  # Demo/Visit Date
-                    "Yes" if self.student.demo_booked else "No",      # Demo Booked
-                    self.student.admission_status                     # Status (Pending)
-                ])
-                print(f"🟢 Data for {self.student.name} ({self.student.phone}) successfully saved to Google Sheet!")
-            except Exception as e:
-                print(f"🔴 Error saving to Google Sheet: {e}")
+            payload = {
+                "name": self.student.name if self.student.name else "N/A",
+                "phone": self.student.phone if self.student.phone else "N/A",
+                "career_goal": getattr(self.student, 'career_goal', 'N/A'),
+                "job_type": getattr(self.student, 'job_type', 'N/A'),
+                "qualification": getattr(self.student, 'qualification', 'N/A'),
+                "computer_knowledge": getattr(self.student, 'computer_knowledge', 'N/A'),
+                "learning_mode": getattr(self.student, 'learning_mode', 'N/A'),
+                "recommended_course": course_name,
+                "selected_time_slot": getattr(self.student, 'selected_time_slot', 'N/A'),
+                "demo_booked": getattr(self.student, 'demo_booked', False)
+            }
+
+            requests.post(WEBHOOK_URL, json=payload, timeout=10)
+            print(f"🟢 Data for {self.student.name} ({self.student.phone}) successfully sent to Google Sheet via Webhook!")
+        except Exception as e:
+            print(f"🔴 Error sending to Webhook: {e}")
         
     # ========================================================
     # SECTION 06 : MAIN PROCESS MESSAGE & WELCOME HANDLERS
