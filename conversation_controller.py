@@ -1439,16 +1439,15 @@ class ConversationController:
                 f"आप ऊपर दिए गए Google Map लिंक को खोलकर सीधे नेविगेशन ऑन कर सकते हैं। Center पहुँचने पर कॉल कर लीजिएगा!"
             )
             return (
-                f"बहुत बढ़िया **{self.student.name} जी**! 🎉\n\n"
-                f"आपकी **1-Day Free Practical Demo Class** के लिए रिक्वेस्ट नोट कर ली गई है।\n\n"
-                f"आप कल अपनी सुविधानुसार Center पर आकर Class ले सकते हैं।\n\n"
-                f"🏢 **Center Address:** Learning Point Destination, Main Campus, Near Central Market / Bus Stand\n"
-                f"🗺️ **Google Maps Link:** https://maps.google.com/?q=Learning+Point+Destination\n"
-                f"📞 **Counselor Helpline:** 9588544158\n\n"
-                f"क्या आपको Center पहुँचने का रास्ता (Route) जानने या किसी अन्य चीज़ में कोई सहायता चाहिए? 😊"
-            )
-            )
-
+            f"बहुत बढ़िया **{self.student.name} जी**! 🎉\n\n"
+            f"आपकी **1-Day Free Practical Demo Class** के लिए रिक्वेस्ट नोट कर ली गई है।\n\n"
+            f"आप कल अपनी सुविधानुसार Center पर आकर Class ले सकते हैं।\n\n"
+            f"🏢 **Center Address:** Learning Point Destination, Main Campus, Near Central Market / Bus Stand\n"
+            f"🗺️ **Google Maps Link:** https://maps.google.com/?q=Learning+Point+Destination\n"
+            f"📞 **Counselor Helpline:** 9588544158\n\n"
+            f"क्या आपको Center पहुँचने का रास्ता (Route) जानने या किसी अन्य चीज़ में कोई सहायता चाहिए? 😊"
+         )
+            
         # 4️⃣ COURSE / SYLLABUS / POWER BI / SPECIFIC COURSES
         elif any(k in norm_text for k in ["course", "syllabus", "power bi", "excel", "python", "digital", "tally", "graphic", "1"]):
             course_name = "Power BI & Data Analytics" if "power bi" in norm_text else "इस Course"
