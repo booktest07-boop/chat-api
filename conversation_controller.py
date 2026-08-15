@@ -324,28 +324,72 @@ class ConversationController:
     # ========================================================
 
     def handle_career_goal(self, text):
-        norm_text = text.lower()
-        if "job" in norm_text or "1" in norm_text:
+        norm_text = text.lower().strip()
+
+        # 🟢 1. BUSINESS (सारे Typos, हिंदी शब्द और Own Business कीवर्ड्स)
+        business_keywords = [
+            "business", "busines", "bussnies", "bosinees", "bussiness", "biz", "bussines",
+            "khud", "own", "apna", "self", "startup", "dukan", "shop", "vyapar", "व्यापार", "बिजनेस", "2"
+        ]
+        
+        # 🟢 2. JOB (Naukri, Work, Placement आदि)
+        job_keywords = [
+            "job", "jobs", "naukri", "nokri", "naukari", "work", "placement", "service", "नौकरी", "जॉब", "1"
+        ]
+
+        # 🟢 3. FREELANCING (Online Work, Work From Home आदि)
+        freelance_keywords = [
+            "freelance", "freelancing", "freelancer", "online work", "ghar baithe", "wfh", 
+            "remote", "online earning", "फ्रीलांसिंग", "3"
+        ]
+
+        # 1️⃣ अगर स्टूडेंट ने Business चुना
+        if any(k in norm_text for k in business_keywords):
+            self.student.career_goal = "Business"
+            self.current_stage = "business_type"
+            return (
+                f"शानदार **{self.student.name} जी**! अपना खुद का Business करना बहुत ही Best फ़ैसला है। 🚀\n\n"
+                f"आप अपने Business में Computer का Use मुख्य रूप से किस काम के लिए करना चाहते हैं?\n\n"
+                f"• Billing, Accounting और GST Manage करने के लिए\n"
+                f"• Business की Digital Marketing और Online Ads चलाने के लिए\n"
+                f"• Poster, Banner और Graphics Designing के लिए\n"
+                f"• Website या Software Development के लिए"
+            )
+
+        # 2️⃣ अगर स्टूडेंट ने Job चुना
+        elif any(k in norm_text for k in job_keywords):
             self.student.career_goal = "Job"
             self.current_stage = "job_type"
             return (
-                f"बहुत बढ़िया **{self.student.name} जी**! अच्छी Job पाने के लिए सही Practical Skills होना बहुत ज़रूरी है।\n\n"
-                f"आप किस Type की Job Profile में Interest रखते हैं?\n"
+                f"बहुत बढ़िया **{self.student.name} जी**! अच्छी Job पाने के लिए सही Practical Skills होना बहुत ज़रूरी है। 💼\n\n"
+                f"आप किस Type की Job Profile में Interest रखते हैं?\n\n"
                 f"• Computerised Accountant\n"
-                f"• Office Specialist\n"
+                f"• Office Specialist / Executive\n"
                 f"• Graphic Designer\n"
                 f"• Digital Marketer\n"
                 f"• Software / Python Developer"
             )
-        elif "business" in norm_text or "व्यापार" in norm_text or "2" in norm_text:
-            self.student.career_goal = "Business"
-            self.current_stage = "business_type"
+
+        # 3️⃣ अगर स्टूडेंट ने Freelancing चुना
+        elif any(k in norm_text for k in freelance_keywords):
+            self.student.career_goal = "Freelancing"
+            self.current_stage = "job_type"
             return (
-                f"शानदार **{self.student.name} जी**! अपना खुद का Business करना बहुत ही Best फ़ैसला है।\n\n"
-                f"आप अपने Business में Computer का Use किस काम के लिए करना चाहते हैं?\n"
-                f"• Billing, Accounting और GST Manage करने के लिए\n"
-                f"• Business की Digital Marketing और Online Ads चलाने के लिए\n"
-                f"• Poster, Banner और Designing के लिए"
+                f"शानदार **{self.student.name} जी**! Freelancing से आप घर बैठे देश-विदेश के Clients के लिए काम कर सकते हैं। 🌐\n\n"
+                f"आप किस Field में Freelancing Skills सीखना चाहते हैं?\n\n"
+                f"• Graphic Designing & Video Editing\n"
+                f"• Digital Marketing & Social Media\n"
+                f"• Web / Software Development\n"
+                f"• Accounting & Data Management"
+            )
+
+        # 4️⃣ अगर समझ न आए तो विनम्रता से विकल्प दोबारा दिखाना
+        else:
+            return (
+                f"**{self.student.name} जी**, कृपया नीचे दिए गए 3 विकल्पों में से अपना पसंदीदा लक्ष्य चुनें:\n\n"
+                f"1️⃣ **Job** (अच्छी सैलरी वाली नौकरी पाना)\n"
+                f"2️⃣ **Business** (खुद का काम या व्यापार बढ़ाना)\n"
+                f"3️⃣ **Freelancing** (घर बैठे ऑनलाइन प्रोजेक्ट्स करना)"
             )
         elif "freelance" in norm_text or "ऑनलाइन" in norm_text or "3" in norm_text:
             self.student.career_goal = "Freelancing"
