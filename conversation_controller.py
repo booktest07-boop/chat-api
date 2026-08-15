@@ -1,33 +1,38 @@
 # ========================================================
 # Google Sheet Connection Setup
 # ========================================================
+import os
+import re
+import base64
+import json
+import gspread
+
 sheet = None
 
 try:
-    import os
-    import base64
-    import json
-    import gspread
-
     raw_env_data = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
 
     if raw_env_data:
-        # अगर डेटा डायरेक्ट JSON फॉर्मेट में है
+        # 1. Raw JSON चेक
         if raw_env_data.startswith("{"):
             credentials_info = json.loads(raw_env_data)
         else:
-            # अगर डेटा Base64 फॉर्मेट में है
+            # 2. Base64 डिकोडिंग
             cleaned_b64 = "".join(raw_env_data.split())
             missing_padding = len(cleaned_b64) % 4
             if missing_padding:
                 cleaned_b64 += "=" * (4 - missing_padding)
 
             decoded_bytes = base64.b64decode(cleaned_b64)
-            credentials_info = json.loads(decoded_bytes.decode("utf-8", errors="ignore"))
+            credentials_info = json.loads(decoded_bytes.decode("utf-8"))
 
+        # 3. PEM Private Key लाइन-ब्रेक (\n) फ़िक्स
         if "private_key" in credentials_info:
-            credentials_info["private_key"] = credentials_info["private_key"].replace("\\n", "\n")
+            pk = credentials_info["private_key"]
+            if "\\n" in pk:
+                credentials_info["private_key"] = pk.replace("\\n", "\n")
 
+        # 4. Google Sheets ऑथराइज़ेशन और कनेक्शन
         gc = gspread.service_account_from_dict(credentials_info)
         sheet_url = "https://docs.google.com/spreadsheets/d/143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY/edit?gid=0#gid=0"
         spreadsheet = gc.open_by_url(sheet_url)
