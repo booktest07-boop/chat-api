@@ -2,21 +2,24 @@
 # SECTION 01 : IMPORTS & GOOGLE SHEETS SETUP
 # ========================================================
 
-import re
-from datetime import datetime
-import gspread
-
 # Google Sheet Connection Setup
 
 try:
     import os
     import base64
     import json
+    import gspread
 
     encoded_credentials = os.environ.get("GOOGLE_JSON_BASE64")
 
     if not encoded_credentials:
         raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
+
+    # 🟢 Auto-Padding Fix (Incorrect padding एरर से बचने के लिए)
+    encoded_credentials = encoded_credentials.strip()
+    missing_padding = len(encoded_credentials) % 4
+    if missing_padding:
+        encoded_credentials += '=' * (4 - missing_padding)
 
     credentials_info = json.loads(
         base64.b64decode(encoded_credentials).decode("utf-8")
