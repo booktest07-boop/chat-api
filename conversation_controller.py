@@ -1,47 +1,45 @@
 # ========================================================
-#  GOOGLE SHEETS WEBHOOK SETUP
+# SECTION 01 : IMPORTS & GOOGLE SHEETS SETUP
 # ========================================================
-import os
+
 import re
-import requests
-import json
 from datetime import datetime
+import gspread
 
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqwfz3UQDvDUxFShoWWbHougyHjr0tFz3E38fX8e0bnTUpya-P0mXW-HXqcFte1TNX/exec"
+# Google Sheet Connection Setup
+
 try:
-    raw_env_data = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
+    import os
+    import base64
+    import json
 
-    if raw_env_data:
-        # 1. JSON या Base64 को पहचानना
-        if raw_env_data.startswith("{"):
-            credentials_info = json.loads(raw_env_data)
-        else:
-            cleaned_b64 = "".join(raw_env_data.split())
-            missing_padding = len(cleaned_b64) % 4
-            if missing_padding:
-                cleaned_b64 += "=" * (4 - missing_padding)
-            decoded_bytes = base64.b64decode(cleaned_b64)
-            credentials_info = json.loads(decoded_bytes.decode("utf-8"))
+    encoded_credentials = os.environ.get("GOOGLE_JSON_BASE64")
 
-        # 2. PEM Private Key लाइन ब्रेक फिक्स
-        if "private_key" in credentials_info:
-            pk = credentials_info["private_key"]
-            # एस्केप किए गए \n को असली न्यूलाइन में बदलना
-            pk = pk.replace("\\n", "\n").replace("\r", "")
-            credentials_info["private_key"] = pk
+    if not encoded_credentials:
+        raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
 
-        gc = gspread.service_account_from_dict(credentials_info)
-        sheet_url = "https://docs.google.com/spreadsheets/d/143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY/edit?gid=0#gid=0"
-        spreadsheet = gc.open_by_url(sheet_url)
-        sheet = spreadsheet.sheet1
-        print("✅ Google Sheet Connected Successfully via URL!")
-    else:
-        print("⚠️ GOOGLE_JSON_BASE64 is empty, skipping sheets...")
+    credentials_info = json.loads(
+        base64.b64decode(encoded_credentials).decode("utf-8")
+    )
+
+    if "private_key" in credentials_info:
+        credentials_info["private_key"] = credentials_info["private_key"].replace(
+            "\\n", "\n"
+        )
+
+    gc = gspread.service_account_from_dict(credentials_info)
+
+    spreadsheet = gc.open_by_key(
+        "143BX78uGM-IeHPx-bYQQhkswaiof1Zn-eRLpz5dY5IY"
+    )
+
+    sheet = spreadsheet.sheet1
+
+    print("✅ Google Sheet Connected Successfully!")
 
 except Exception as e:
     print(f"❌ Google Sheets Connection Error: {e}")
     sheet = None
-    
 # ========================================================
 # SECTION 02 : COURSE CONSTANTS (Learning Point Destination)
 # ========================================================
@@ -156,30 +154,32 @@ class ConversationController:
     # 🟢 ----------------------------------------------------
     # यहाँ पेस्ट करें: GOOGLE SHEET SAVE FUNCTION
     # ----------------------------------------------------
-   def save_student_to_sheet(self):
-        """Student का डेटा सीधे Webhook के ज़रिए Google Sheet में भेजने के लिए फ़ंक्शन"""
-        try:
-            course_key = getattr(self.student, 'recommended_course', '')
-            course_obj = COURSES_DATA.get(course_key, {}) if 'COURSES_DATA' in globals() else {}
-            course_name = course_obj.get('name', course_key)
+    def save_student_to_sheet(self):
+        """Student का डेटा Google Sheet में भेजने के लिए फ़ंक्शन"""
+        if sheet:
+            try:
+                course_key = getattr(self.student, 'recommended_course', '')
+                course_obj = COURSES_DATA.get(course_key, {}) if 'COURSES_DATA' in globals() else {}
+                course_name = course_obj.get('name', course_key)
 
-            payload = {
-                "name": self.student.name if self.student.name else "N/A",
-                "phone": self.student.phone if self.student.phone else "N/A",
-                "career_goal": getattr(self.student, 'career_goal', 'N/A'),
-                "job_type": getattr(self.student, 'job_type', 'N/A'),
-                "qualification": getattr(self.student, 'qualification', 'N/A'),
-                "computer_knowledge": getattr(self.student, 'computer_knowledge', 'N/A'),
-                "learning_mode": getattr(self.student, 'learning_mode', 'N/A'),
-                "recommended_course": course_name,
-                "selected_time_slot": getattr(self.student, 'selected_time_slot', 'N/A'),
-                "demo_booked": getattr(self.student, 'demo_booked', False)
-            }
-
-            requests.post(WEBHOOK_URL, json=payload, timeout=10)
-            print(f"🟢 Data for {self.student.name} ({self.student.phone}) successfully sent to Google Sheet via Webhook!")
-        except Exception as e:
-            print(f"🔴 Error sending to Webhook: {e}")
+                sheet.append_row([
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),      # Date & Time
+                    self.student.name if self.student.name else "N/A",  # Name
+                    self.student.phone if self.student.phone else "N/A",# 📱 Phone Number
+                    self.student.career_goal,                          # Goal
+                    self.student.job_type,                            # Profile
+                    self.student.qualification,                       # Qualification
+                    self.student.computer_knowledge,                  # Knowledge
+                    self.student.learning_mode,                      # Mode (Offline/Online)
+                    course_name,                                      # Course
+                    self.student.selected_time_slot,                  # Time Slot
+                    self.student.selected_date_time,                  # Demo/Visit Date
+                    "Yes" if self.student.demo_booked else "No",      # Demo Booked
+                    self.student.admission_status                     # Status (Pending)
+                ])
+                print(f"🟢 Data for {self.student.name} ({self.student.phone}) successfully saved to Google Sheet!")
+            except Exception as e:
+                print(f"🔴 Error saving to Google Sheet: {e}")
         
     # ========================================================
     # SECTION 06 : MAIN PROCESS MESSAGE & WELCOME HANDLERS
