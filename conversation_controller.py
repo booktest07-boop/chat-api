@@ -122,16 +122,16 @@ class StudentProfile:
 
 class ConversationController:
 
-    # ========================================================
-    # SECTION 05 : INITIALIZATION (__init__)
-    # ========================================================
+# ========================================================
+# SECTION 05 : INITIALIZATION (__init__)
+# ========================================================
 
     def __init__(self):
         # Student Profile Instance
         self.student = StudentProfile()
 
-        # Conversation State Tracking
-        self.current_stage = "welcome" # welcome, name, career_goal, etc.
+        # Conversation State Tracking (यहाँ "name" सेट किया गया है)
+        self.current_stage = "name"
         self.previous_stage = ""
         self.session_active = True
         self.conversation_completed = False
