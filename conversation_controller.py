@@ -328,7 +328,7 @@ class ConversationController:
 
         # 🟢 1. BUSINESS (सारे Typos, हिंदी शब्द और Own Business कीवर्ड्स)
         business_keywords = [
-            "business", "busines", "bussnies", "bosinees", "bussiness", "biz", "bussines",
+            "business", "busines", "bussnies", "bosinees", "bussiness", "biz",
             "khud", "own", "apna", "self", "startup", "dukan", "shop", "vyapar", "व्यापार", "बिजनेस", "2"
         ]
         
@@ -340,7 +340,7 @@ class ConversationController:
         # 🟢 3. FREELANCING (Online Work, Work From Home आदि)
         freelance_keywords = [
             "freelance", "freelancing", "freelancer", "online work", "ghar baithe", "wfh", 
-            "remote", "online earning", "फ्रीलांसिंग", "3"
+            "remote", "online earning", "फ्रीलांसिंग", "ऑनलाइन", "3"
         ]
 
         # 1️⃣ अगर स्टूडेंट ने Business चुना
@@ -373,17 +373,17 @@ class ConversationController:
         # 3️⃣ अगर स्टूडेंट ने Freelancing चुना
         elif any(k in norm_text for k in freelance_keywords):
             self.student.career_goal = "Freelancing"
-            self.current_stage = "job_type"
+            self.current_stage = "freelancing_skill"
             return (
                 f"शानदार **{self.student.name} जी**! Freelancing से आप घर बैठे देश-विदेश के Clients के लिए काम कर सकते हैं। 🌐\n\n"
-                f"आप किस Field में Freelancing Skills सीखना चाहते हैं?\n\n"
-                f"• Graphic Designing & Video Editing\n"
-                f"• Digital Marketing & Social Media\n"
-                f"• Web / Software Development\n"
+                f"आप कौन सी Skill सीखकर Freelancing करना चाहते हैं?\n\n"
+                f"• Graphic Designing (Logo, Banner, Social Media Posts)\n"
+                f"• Digital Marketing & Content Creation\n"
+                f"• Python Programming / Web Development\n"
                 f"• Accounting & Data Management"
             )
 
-        # 4️⃣ अगर समझ न आए तो विनम्रता से विकल्प दोबारा दिखाना
+        # 4️⃣ अगर समझ न आए तो विकल्प दिखाना
         else:
             return (
                 f"**{self.student.name} जी**, कृपया नीचे दिए गए 3 विकल्पों में से अपना पसंदीदा लक्ष्य चुनें:\n\n"
@@ -391,18 +391,6 @@ class ConversationController:
                 f"2️⃣ **Business** (खुद का काम या व्यापार बढ़ाना)\n"
                 f"3️⃣ **Freelancing** (घर बैठे ऑनलाइन प्रोजेक्ट्स करना)"
             )
-        elif "freelance" in norm_text or "ऑनलाइन" in norm_text or "3" in norm_text:
-            self.student.career_goal = "Freelancing"
-            self.current_stage = "freelancing_skill"
-            return (
-                f"बहुत अच्छा **{self.student.name} जी**! आजकल घर बैठे Online काम करके अच्छी Earning करने के बहुत मौके हैं।\n\n"
-                f"आप कौन सी Skill सीखकर Freelancing करना चाहते हैं?\n"
-                f"• Graphic Designing (Logo, Banner, Social Media Posts)\n"
-                f"• Digital Marketing & Content Creation\n"
-                f"• Python Programming / Web Development"
-            )
-        else:
-            return f"{self.student.name} जी, कृपया Job, Business या Freelancing में से अपना Option चुनें।"
 
     # ========================================================
     # SECTION 10 : JOB TYPE HANDLER
