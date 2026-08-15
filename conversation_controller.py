@@ -1,6 +1,5 @@
-
 # ========================================================
-# Google Sheet Connection Setup
+# Google Sheet Connection Setup (Dual Mode: Raw JSON + Base64)
 # ========================================================
 try:
     import os
@@ -8,21 +7,23 @@ try:
     import json
     import gspread
 
-    encoded_credentials = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
+    raw_env_data = os.environ.get("GOOGLE_JSON_BASE64", "").strip()
 
-    if not encoded_credentials:
+    if not raw_env_data:
         raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
 
-    # व्हाइटस्पेस और न्यूलाइन्स हटाना
-    encoded_credentials = "".join(encoded_credentials.split())
+    # 🟢 1. अगर वैल्यू सीधे JSON फॉर्मेट में है (जैसे { "type": "service_account"... })
+    if raw_env_data.startswith("{"):
+        credentials_info = json.loads(raw_env_data)
+    else:
+        # 🟢 2. अगर वैल्यू Base64 एनकोडेड है
+        cleaned_b64 = "".join(raw_env_data.split())
+        missing_padding = len(cleaned_b64) % 4
+        if missing_padding:
+            cleaned_b64 += "=" * (4 - missing_padding)
 
-    # मिसिंग पैडिंग ऑटो-फिक्स
-    missing_padding = len(encoded_credentials) % 4
-    if missing_padding:
-        encoded_credentials += "=" * (4 - missing_padding)
-
-    decoded_data = base64.b64decode(encoded_credentials).decode("utf-8")
-    credentials_info = json.loads(decoded_data)
+        decoded_bytes = base64.b64decode(cleaned_b64)
+        credentials_info = json.loads(decoded_bytes.decode("utf-8", errors="ignore"))
 
     if "private_key" in credentials_info:
         credentials_info["private_key"] = credentials_info["private_key"].replace("\\n", "\n")
@@ -36,6 +37,7 @@ try:
 except Exception as e:
     print(f"❌ Google Sheets Connection Error: {e}")
     sheet = None
+    
 # ========================================================
 # SECTION 02 : COURSE CONSTANTS (Learning Point Destination)
 # ========================================================
