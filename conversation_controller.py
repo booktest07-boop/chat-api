@@ -1,5 +1,5 @@
-# ========================================================
-# Google Sheet Connection Setup (Dual Mode: Raw JSON + Base64)
+# ==================================================
+# Google Sheet Connection Setup (Using Direct URL)
 # ========================================================
 try:
     import os
@@ -12,11 +12,11 @@ try:
     if not raw_env_data:
         raise ValueError("GOOGLE_JSON_BASE64 environment variable not found")
 
-    # 🟢 1. अगर वैल्यू सीधे JSON फॉर्मेट में है (जैसे { "type": "service_account"... })
+    # 1. अगर वैल्यू सीधे JSON है
     if raw_env_data.startswith("{"):
         credentials_info = json.loads(raw_env_data)
     else:
-        # 🟢 2. अगर वैल्यू Base64 एनकोडेड है
+        # 2. अगर Base64 है
         cleaned_b64 = "".join(raw_env_data.split())
         missing_padding = len(cleaned_b64) % 4
         if missing_padding:
@@ -28,11 +28,15 @@ try:
     if "private_key" in credentials_info:
         credentials_info["private_key"] = credentials_info["private_key"].replace("\\n", "\n")
 
+    # Google Auth
     gc = gspread.service_account_from_dict(credentials_info)
-    spreadsheet = gc.open_by_key("143BX78uGM-IeHPx-bYQQhkswaiof1Zn-eRLpz5dY5IY")
+
+    # 🟢 यहाँ आपकी पूरी Google Sheet की URL से सीधा कनेक्शन
+    sheet_url = "https://docs.google.com/spreadsheets/d/143BX78uGM-IeHPx-bYQQhkswaiOf1Zn-eRLpz5dY5IY/edit?gid=0#gid=0"
+    spreadsheet = gc.open_by_url(sheet_url)
     sheet = spreadsheet.sheet1
 
-    print("✅ Google Sheet Connected Successfully!")
+    print("✅ Google Sheet Connected Successfully via URL!")
 
 except Exception as e:
     print(f"❌ Google Sheets Connection Error: {e}")
