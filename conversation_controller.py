@@ -1491,7 +1491,23 @@ class ConversationController:
             f"📞 **Counselor Helpline:** 9588544158\n\n"
             f"क्या आपको Center पहुँचने का रास्ता (Route) जानने या किसी अन्य चीज़ में कोई सहायता चाहिए? 😊"
          )
-            
+         # 🟢 Abroad / Foreign / Out of India Query Handler
+        elif any(k in norm_text for k in ["usa", "america", "abroad", "videsh", "foreign", "canada", "dubai", "gulf", "bahar"]):
+            return (
+                f"**{self.student.name} जी**, अगर आप Foreign / Abroad (जैसे USA, Canada, Gulf) में Career बनाना चाहते हैं, "
+                f"तो International Level पर इन IT व Tech Skills की सबसे ज़्यादा डिमांड है:\n\n"
+                f"1. 💻 **Full Stack Web / Software Development (Python / MERN)**\n"
+                f"2. 📊 **Data Analytics with Power BI & Advanced Excel**\n"
+                f"3. 🚀 **Advanced Digital Marketing & SEO**\n\n"
+                f"हमारे Center पर इन सभी के Practical & Industry Standard कोर्सेज कराए जाते हैं।\n"
+                f"क्या आप इनमें से किसी Course की Details जानना चाहते हैं?"
+            )  
+        # 🟢 Visa / Passport / Non-Institute Queries
+        elif any(k in norm_text for k in ["visa", "passport", "embassy", "ticket", "flight"]):
+            return (
+                f"**{self.student.name} जी**, हम **Learning Point Destination** में केवल Professional Computer & IT Courses की प्रैक्टिकल ट्रेनिंग प्रदान करते हैं, Visa या Immigration की सुविधा हमारे यहाँ उपलब्ध नहीं है। ✈️\n\n"
+                f"हाँ, विदेश में अच्छी जॉब पाने के लिए यदि आपको कोई **Technical / Computer Skill** सीखनी हो, तो हम आपकी पूरी मदद कर सकते हैं। 😊"
+            )
         # 4️⃣ COURSE / SYLLABUS / POWER BI / SPECIFIC COURSES
         elif any(k in norm_text for k in ["course", "syllabus", "power bi", "excel", "python", "digital", "tally", "graphic", "1"]):
             course_name = "Power BI & Data Analytics" if "power bi" in norm_text else "इस Course"
