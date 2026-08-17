@@ -5,6 +5,9 @@
 import re
 from datetime import datetime
 import gspread
+import requests
+
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqwfz3UQDvDUxFShoWWbHougyHjr0tFz3E38fX8e0bnTUpya-P0mXW-HXqcFte1TNX/exec"
 
 # Google Sheet Connection Setup
 
@@ -155,31 +158,23 @@ class ConversationController:
     # यहाँ पेस्ट करें: GOOGLE SHEET SAVE FUNCTION
     # ----------------------------------------------------
     def save_student_to_sheet(self):
-        """Student का डेटा Google Sheet में भेजने के लिए फ़ंक्शन"""
-        if sheet:
-            try:
-                course_key = getattr(self.student, 'recommended_course', '')
-                course_obj = COURSES_DATA.get(course_key, {}) if 'COURSES_DATA' in globals() else {}
-                course_name = course_obj.get('name', course_key)
-
-                sheet.append_row([
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),      # Date & Time
-                    self.student.name if self.student.name else "N/A",  # Name
-                    self.student.phone if self.student.phone else "N/A",# 📱 Phone Number
-                    self.student.career_goal,                          # Goal
-                    self.student.job_type,                            # Profile
-                    self.student.qualification,                       # Qualification
-                    self.student.computer_knowledge,                  # Knowledge
-                    self.student.learning_mode,                      # Mode (Offline/Online)
-                    course_name,                                      # Course
-                    self.student.selected_time_slot,                  # Time Slot
-                    self.student.selected_date_time,                  # Demo/Visit Date
-                    "Yes" if self.student.demo_booked else "No",      # Demo Booked
-                    self.student.admission_status                     # Status (Pending)
-                ])
-                print(f"🟢 Data for {self.student.name} ({self.student.phone}) successfully saved to Google Sheet!")
-            except Exception as e:
-                print(f"🔴 Error saving to Google Sheet: {e}")
+        try:
+            payload = {
+                "name": getattr(self.student, 'name', 'N/A'),
+                "phone": getattr(self.student, 'phone', 'N/A'),
+                "career_goal": getattr(self.student, 'career_goal', 'N/A'),
+                "job_type": getattr(self.student, 'job_type', 'N/A'),
+                "qualification": getattr(self.student, 'qualification', 'N/A'),
+                "computer_knowledge": getattr(self.student, 'computer_knowledge', 'N/A'),
+                "learning_mode": getattr(self.student, 'learning_mode', 'N/A'),
+                "recommended_course": getattr(self.student, 'recommended_course', 'N/A'),
+                "selected_time_slot": getattr(self.student, 'selected_time_slot', 'N/A'),
+                "demo_booked": getattr(self.student, 'demo_booked', False)
+            }
+            requests.post(WEBHOOK_URL, json=payload, timeout=5)
+            print("🟢 Data saved to Google Sheet successfully!")
+        except Exception as e:
+            print(f"🔴 Webhook Error: {e}")
         
     # ========================================================
     # SECTION 06 : MAIN PROCESS MESSAGE & WELCOME HANDLERS
